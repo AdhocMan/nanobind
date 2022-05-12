@@ -112,6 +112,27 @@ public:
     NB_TYPE_CASTER(T, const_name<std::is_integral_v<T>>("int", "float"));
 };
 
+template <typename T>
+struct type_caster<std::complex<T>, enable_if_t<std::is_floating_point_v<T>>> {
+    NB_INLINE bool from_python(handle src, uint8_t flags, cleanup_list *) noexcept {
+        std::pair<std::complex<T>, bool> result;
+
+        if constexpr (sizeof(T) == 8)
+            result = detail::load_c64(src.ptr(), flags);
+        else
+            result = detail::load_c32(src.ptr(), flags);
+
+        value = result.first;
+        return result.second;
+    }
+
+    NB_INLINE static handle from_cpp(std::complex<T> src, rv_policy, cleanup_list *) noexcept {
+      return PyComplex_FromDoubles((double)src.real(), (double)src.imag());
+    }
+
+    NB_TYPE_CASTER(std::complex<T>, const_name("complex"));
+};
+
 template <> struct type_caster<void_type> {
     static constexpr auto Name = const_name("None");
 };

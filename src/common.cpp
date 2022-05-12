@@ -581,6 +581,35 @@ std::pair<float, bool> load_f32(PyObject *o, uint8_t flags) noexcept {
     return { 0.f, false };
 }
 
+
+std::pair<std::complex<float>, bool>    load_c32(PyObject *o, uint8_t flags) noexcept {
+    const bool convert = flags & (uint8_t) cast_flags::convert;
+    if (convert || PyComplex_Check(o)) {
+        auto result =  PyComplex_AsCComplex(o);
+
+        if (result.real != -1.0 || !PyErr_Occurred())
+            return { std::complex<float>((float) result.real,(float) result.imag), true };
+        else
+            PyErr_Clear();
+    }
+
+    return { std::complex<float>(0.f), false };
+}
+
+std::pair<std::complex<double>, bool>   load_c64(PyObject *o, uint8_t flags) noexcept {
+    const bool convert = flags & (uint8_t) cast_flags::convert;
+    if (convert || PyComplex_Check(o)) {
+        auto result =  PyComplex_AsCComplex(o);
+
+        if (result.real != -1.0 || !PyErr_Occurred())
+            return { std::complex<double>((double) result.real,(double) result.imag), true };
+        else
+            PyErr_Clear();
+    }
+
+    return { std::complex<double>(0.0), false };
+}
+
 template <typename T>
 NB_INLINE std::pair<T, bool> load_int(PyObject *o, uint32_t flags) noexcept {
     using T0 = std::conditional_t<sizeof(T) <= sizeof(long), long, long long>;

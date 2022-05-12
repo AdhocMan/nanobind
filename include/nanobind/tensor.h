@@ -78,14 +78,16 @@ struct jax { };
 
 template <typename T> constexpr dlpack::dtype dtype() {
     static_assert(
-        std::is_floating_point_v<T> || std::is_integral_v<T>,
-        "nanobind::dtype<T>: T must be a floating point or integer variable!"
+        std::is_floating_point_v<T> || std::is_integral_v<T> || detail::is_complex_v<T>,
+        "nanobind::dtype<T>: T must be a floating point, complex or integer variable!"
     );
 
     dlpack::dtype result;
 
     if constexpr (std::is_floating_point_v<T>)
         result.code = (uint8_t) dlpack::dtype_code::Float;
+    else if constexpr (detail::is_complex_v<T>)
+        result.code = (uint8_t) dlpack::dtype_code::Complex;
     else if constexpr (std::is_signed_v<T>)
         result.code = (uint8_t) dlpack::dtype_code::Int;
     else
@@ -123,6 +125,18 @@ template <typename T> struct tensor_arg<T, enable_if_t<std::is_floating_point_v<
 
     static constexpr auto name =
         const_name("dtype=float") + const_name<sizeof(T) * 8>();
+
+    static void apply(tensor_req &tr) {
+        tr.dtype = dtype<T>();
+        tr.req_dtype = true;
+    }
+};
+
+template <typename T> struct tensor_arg<T, enable_if_t<detail::is_complex_v<T>>> {
+    static constexpr size_t size = 0;
+
+    static constexpr auto name =
+        const_name("dtype=complex") + const_name<sizeof(T) * 8>();
 
     static void apply(tensor_req &tr) {
         tr.dtype = dtype<T>();
@@ -185,7 +199,7 @@ template <typename... Ts> struct tensor_info {
 
 template <typename T, typename... Ts> struct tensor_info<T, Ts...>  : tensor_info<Ts...> {
     using scalar_type =
-        std::conditional_t<std::is_scalar_v<T>, T,
+        std::conditional_t<std::is_scalar_v<T> || detail::is_complex_v<T>, T,
                            typename tensor_info<Ts...>::scalar_type>;
 };
 

@@ -93,6 +93,14 @@ int nb_tensor_getbuffer(PyObject *exporter, Py_buffer *view, int) {
             }
             break;
 
+        case dlpack::dtype_code::Complex:
+            switch (t.dtype.bits) {
+                case 32: format = "E"; break;
+                case 64: format = "F"; break;
+                case 128: format = "D"; break;
+            }
+            break;
+
         default:
             break;
     }
@@ -205,6 +213,10 @@ static PyObject *dlpack_from_buffer_protocol(PyObject *o) {
             case 'e':
             case 'f':
             case 'd': dt.code = (uint8_t) dlpack::dtype_code::Float; break;
+
+            case 'E':
+            case 'F':
+            case 'D': dt.code = (uint8_t) dlpack::dtype_code::Complex; break;
 
             default:
                 fail = true;
@@ -397,6 +409,7 @@ tensor_handle *tensor_import(PyObject *o, const tensor_req *req,
             case (uint8_t) dlpack::dtype_code::Int: prefix = "int"; break;
             case (uint8_t) dlpack::dtype_code::UInt: prefix = "uint"; break;
             case (uint8_t) dlpack::dtype_code::Float: prefix = "float"; break;
+            case (uint8_t) dlpack::dtype_code::Complex: prefix = "Complex"; break;
             default:
                 return nullptr;
         }

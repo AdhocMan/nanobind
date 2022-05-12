@@ -46,6 +46,10 @@ template <typename T> using intrinsic_t = typename intrinsic_type<T>::type;
 template <typename T>
 constexpr bool is_pointer_v = std::is_pointer_v<std::remove_reference_t<T>>;
 
+template <typename T> struct is_complex : public std::false_type {};
+template <typename T> struct is_complex<std::complex<T>> : public std::true_type {};
+template <class T> inline constexpr bool is_complex_v = is_complex<T>::value;
+
 template <typename T, typename U>
 using forwarded_type = std::conditional_t<std::is_lvalue_reference_v<T>,
                                           std::remove_reference_t<U> &,

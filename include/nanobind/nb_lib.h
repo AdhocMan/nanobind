@@ -359,6 +359,8 @@ NB_CORE std::pair<int64_t, bool>  load_i64(PyObject *o, uint8_t flags) noexcept;
 NB_CORE std::pair<uint64_t, bool> load_u64(PyObject *o, uint8_t flags) noexcept;
 NB_CORE std::pair<float, bool>    load_f32(PyObject *o, uint8_t flags) noexcept;
 NB_CORE std::pair<double, bool>   load_f64(PyObject *o, uint8_t flags) noexcept;
+NB_CORE std::pair<std::complex<float>, bool>  load_c32(PyObject *o, uint8_t flags) noexcept;
+NB_CORE std::pair<std::complex<double>, bool> load_c64(PyObject *o, uint8_t flags) noexcept;
 
 NAMESPACE_END(detail)
 NAMESPACE_END(NB_NAMESPACE)
